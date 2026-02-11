@@ -3,6 +3,7 @@ const express= require('express');
 const app =express();
 const path = require('path');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
 
 const userModel = require('./models/user')
 
@@ -30,16 +31,35 @@ app.post('/create', async function(req,res){
         password: hash,
         age,
     })
+     let token = jwt.sign({email}, "shhhhhhhh");
+     res.cookie('token' , token);
     res.send(userCreated);
 
-    })
-
    })
-
-
-   
+  })
+})
+app.get('/login', function(req,res){
+    res.render('login');
 })
 
+app.get('/logout', function(req,res){
+    res.cookie('token' , "");
+    res.redirect('/');
+})
+app.post('/login', async function(req,res){
+    let {email, password} = req.body; 
+    let user = await userModel.findOne({email});
+    if(!user){ return res.send('something is wrong')}
+
+bcrypt.compare(password , user.password , function(err , result){
+    if(result){ 
+    let token = jwt.sign({email}, "shhhhhhhh");
+        res.cookie('token' , token);
+        res.send('user logged in successfully')}
+    else{res.send('something is wrong')}
+})
+
+})
 
 app.listen(4000, function(req,res){
     console.log('server is running on port 4000');
