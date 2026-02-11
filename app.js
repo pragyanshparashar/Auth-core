@@ -2,6 +2,7 @@ const cookieParser = require('cookie-parser');
 const express= require('express');
 const app =express();
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const userModel = require('./models/user')
 
@@ -19,13 +20,24 @@ app.get('/', function(req,res){
 
 app.post('/create', async function(req,res){
     let {username , email , password , age } = req.body
+   bcrypt.genSalt(10, function(er,salt){
+    bcrypt.hash(password , salt , async function(err,hash){
+
+ 
     let userCreated = await userModel.create({
         username,
         email,
-        password,
+        password: hash,
         age,
     })
     res.send(userCreated);
+
+    })
+
+   })
+
+
+   
 })
 
 
